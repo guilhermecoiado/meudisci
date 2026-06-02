@@ -10,6 +10,8 @@ const ui = {
   tabAdmin: document.getElementById('tabAdmin'),
   discipleForm: document.getElementById('discipleForm'),
   adminForm: document.getElementById('adminForm'),
+  installAppBtn: document.getElementById('installAppBtn'),
+  installAppActionButtons: document.querySelectorAll('[data-action="install-app"]'),
   greeting: document.getElementById('greeting'),
   discipleMentor: document.getElementById('discipleMentor'),
   discipleLast: document.getElementById('discipleLast'),
@@ -65,6 +67,7 @@ const ui = {
   editDiscipleModal: document.getElementById('editDiscipleModal'),
   closeEditDiscipleModal: document.getElementById('closeEditDiscipleModal'),
   editDiscipleForm: document.getElementById('editDiscipleForm'),
+  saveEditedDiscipleBtn: document.getElementById('saveEditedDiscipleBtn'),
   editDiscipleRowId: document.getElementById('editDiscipleRowId'),
   editDiscipleName: document.getElementById('editDiscipleName'),
   editDiscipleEmail: document.getElementById('editDiscipleEmail'),
@@ -87,6 +90,118 @@ let runtimeState = {
 };
 
 let confirmModalResolver = null;
+let toastTimer = null;
+let deferredInstallPrompt = null;
+
+function ensureToastContainer_() {
+  let container = document.getElementById('appToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'appToastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+function showToast(message, type) {
+  const tone = type || 'success';
+  const container = ensureToastContainer_();
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${tone}`;
+  toast.textContent = String(message || '').trim();
+  container.innerHTML = '';
+  container.appendChild(toast);
+
+  if (navigator.vibrate) {
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion) {
+      if (tone === 'error') {
+        navigator.vibrate([40, 30, 40]);
+      } else if (tone === 'info') {
+        navigator.vibrate(22);
+      } else {
+        navigator.vibrate([18, 28, 18]);
+      }
+    }
+  }
+
+  window.requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  if (toastTimer) {
+    window.clearTimeout(toastTimer);
+  }
+
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2400);
+}
+
+function ensureLoadingOverlay_() {
+  let overlay = document.getElementById('appLoadingOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'appLoadingOverlay';
+    overlay.className = 'app-loading-overlay hidden';
+    overlay.innerHTML = `
+      <div class="app-loading-box" role="status" aria-live="polite">
+        <span class="app-loading-spinner" aria-hidden="true"></span>
+        <span id="appLoadingMessage">Carregando...</span>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  return overlay;
+}
+
+function showLoading(message) {
+  const overlay = ensureLoadingOverlay_();
+  const msgEl = overlay.querySelector('#appLoadingMessage');
+  if (msgEl) {
+    msgEl.textContent = message || 'Carregando...';
+  }
+  overlay.classList.remove('hidden');
+}
+
+function hideLoading() {
+  const overlay = ensureLoadingOverlay_();
+  overlay.classList.add('hidden');
+}
+
+function updateInstallButton_() {
+  if (!ui.installAppActionButtons || !ui.installAppActionButtons.length) {
+    return;
+  }
+  const hasPrompt = Boolean(deferredInstallPrompt);
+  ui.installAppActionButtons.forEach((button) => {
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+    button.title = hasPrompt ? 'Instalar app' : 'Instalação pode não estar disponível neste dispositivo';
+  });
+}
+
+async function handleInstallApp() {
+  if (!deferredInstallPrompt) {
+    showToast('Instalação não disponível neste dispositivo.', 'info');
+    return;
+  }
+
+  deferredInstallPrompt.prompt();
+  try {
+    const choice = await deferredInstallPrompt.userChoice;
+    if (choice && choice.outcome === 'accepted') {
+      showToast('App instalado com sucesso!', 'success');
+    } else {
+      showToast('Instalação cancelada.', 'info');
+    }
+  } finally {
+    deferredInstallPrompt = null;
+    updateInstallButton_();
+  }
+}
 
 function setActiveTab(role) {
   const disciple = role === 'disciple';
@@ -99,6 +214,30 @@ function setActiveTab(role) {
   ui.adminForm.setAttribute('aria-hidden', String(disciple));
   ui.discipleForm.setAttribute('aria-hidden', String(!disciple));
   ui.feedback.textContent = '';
+  ui.feedback.style.color = '';
+  ui.feedback.classList.remove('feedback-loading', 'feedback-success', 'feedback-error');
+}
+
+function setLoginFeedback_(message, tone) {
+  ui.feedback.classList.remove('feedback-loading', 'feedback-success', 'feedback-error');
+  ui.feedback.textContent = message || '';
+  if (tone === 'success') {
+    ui.feedback.style.color = '#1f7b5b';
+    void ui.feedback.offsetWidth;
+    ui.feedback.classList.add('feedback-success');
+    return;
+  }
+  if (tone === 'error') {
+    ui.feedback.style.color = '#c03737';
+    void ui.feedback.offsetWidth;
+    ui.feedback.classList.add('feedback-error');
+    return;
+  }
+  ui.feedback.style.color = '';
+  if (tone === 'info') {
+    void ui.feedback.offsetWidth;
+    ui.feedback.classList.add('feedback-loading');
+  }
 }
 
 async function apiCall(action, payload) {
@@ -382,6 +521,7 @@ async function deleteAdminScheduledEvent(eventId) {
     return;
   }
 
+  showToast('Excluído com sucesso!', 'success');
   await openScheduledModal();
   await loadAdminDashboard();
 }
@@ -429,6 +569,7 @@ async function deleteDiscipleScheduledEvent(eventId) {
     return;
   }
 
+  showToast('Excluído com sucesso!', 'success');
   await openDiscipleScheduledModal();
   await loadDiscipleDashboard();
 }
@@ -439,22 +580,26 @@ async function loginDisciple(event) {
   const sigla = event.target.sigla.value;
   const password = event.target.password.value;
 
+  setLoginFeedback_('Efetuando login...', 'info');
+
   let result;
   try {
     result = await apiCall('loginDisciple', { sigla, password });
   } catch (_error) {
-    ui.feedback.textContent = 'Não foi possível conectar com a API.';
+    setLoginFeedback_('Não foi possível conectar com a API.', 'error');
     return;
   }
 
   if (!result.ok) {
-    ui.feedback.textContent = result.error || 'Falha no login.';
+    setLoginFeedback_(result.error || 'Falha no login.', 'error');
     return;
   }
 
   runtimeState.role = 'disciple';
   runtimeState.token = result.token;
   saveSession({ role: 'disciple', token: result.token });
+  setLoginFeedback_('Login efetuado, aguarde!', 'success');
+  await new Promise((resolve) => window.setTimeout(resolve, 350));
   await loadDiscipleDashboard();
 }
 
@@ -464,16 +609,18 @@ async function loginAdmin(event) {
   const user = event.target.user.value;
   const password = event.target.password.value;
 
+  setLoginFeedback_('Efetuando login...', 'info');
+
   let result;
   try {
     result = await apiCall('loginAdmin', { user, password });
   } catch (_error) {
-    ui.feedback.textContent = 'Não foi possível conectar com a API.';
+    setLoginFeedback_('Não foi possível conectar com a API.', 'error');
     return;
   }
 
   if (!result.ok) {
-    ui.feedback.textContent = result.error || 'Falha no login.';
+    setLoginFeedback_(result.error || 'Falha no login.', 'error');
     return;
   }
 
@@ -482,6 +629,8 @@ async function loginAdmin(event) {
   runtimeState.adminName = String(user || '').trim();
   runtimeState.showAllAdminList = false;
   saveSession({ role: 'admin', token: result.token, adminName: runtimeState.adminName });
+  setLoginFeedback_('Login efetuado, aguarde!', 'success');
+  await new Promise((resolve) => window.setTimeout(resolve, 350));
   await loadAdminDashboard();
 }
 
@@ -586,14 +735,28 @@ function createAdminItem(disciple) {
 
   topicoBtn.addEventListener('click', async () => {
     topicoBtn.disabled = true;
-    await saveAdminField(disciple.rowId, 'ultimoTopico', topicoArea.value);
-    topicoBtn.disabled = false;
+    topicoBtn.textContent = 'Salvando';
+    const saved = await saveAdminField(disciple.rowId, 'ultimoTopico', topicoArea.value);
+    if (topicoBtn.isConnected) {
+      topicoBtn.disabled = false;
+      topicoBtn.textContent = 'Salvar';
+    }
+    if (saved) {
+      await loadAdminDashboard();
+    }
   });
 
   metaBtn.addEventListener('click', async () => {
     metaBtn.disabled = true;
-    await saveAdminField(disciple.rowId, 'metaSemana', metaArea.value);
-    metaBtn.disabled = false;
+    metaBtn.textContent = 'Salvando';
+    const saved = await saveAdminField(disciple.rowId, 'metaSemana', metaArea.value);
+    if (metaBtn.isConnected) {
+      metaBtn.disabled = false;
+      metaBtn.textContent = 'Salvar';
+    }
+    if (saved) {
+      await loadAdminDashboard();
+    }
   });
 
   return item;
@@ -692,15 +855,23 @@ async function saveAdminField(rowId, field, value) {
     });
   } catch (_error) {
     await openPopupMessage('Falha de comunicação com a API.');
-    return;
+    return false;
   }
 
   if (!result.ok) {
     await openPopupMessage(result.error || 'Não foi possível salvar.');
-    return;
+    return false;
   }
 
-  await loadAdminDashboard();
+  if (field === 'ultimoTopico') {
+    showToast('Tópico salvo!', 'success');
+  } else if (field === 'metaSemana') {
+    showToast('Meta salva!', 'success');
+  } else {
+    showToast('Editado com sucesso!', 'success');
+  }
+
+  return true;
 }
 
 async function loadAdminDashboard() {
@@ -786,6 +957,7 @@ async function submitNewDisciple(event) {
 
   ui.addDiscipleFeedback.style.color = '#1f7b5b';
   ui.addDiscipleFeedback.textContent = 'Discípulo cadastrado com sucesso.';
+  showToast('Adicionado com sucesso!', 'success');
 
   window.setTimeout(async () => {
     closeAddDiscipleModal();
@@ -903,6 +1075,14 @@ function closeEditDiscipleModal() {
 async function submitEditDisciple(event) {
   event.preventDefault();
 
+  const originalSubmitText = ui.saveEditedDiscipleBtn
+    ? ui.saveEditedDiscipleBtn.textContent
+    : 'Salvar alterações';
+  if (ui.saveEditedDiscipleBtn) {
+    ui.saveEditedDiscipleBtn.disabled = true;
+    ui.saveEditedDiscipleBtn.textContent = 'Salvando alterações';
+  }
+
   const rowId = ui.editDiscipleRowId.value;
   const updates = {
     nome: ui.editDiscipleName.value,
@@ -913,36 +1093,42 @@ async function submitEditDisciple(event) {
     lider: ui.editDiscipleLeader.value,
   };
 
-  const entries = Object.entries(updates);
-  for (const [field, value] of entries) {
-    let result;
-    try {
-      result = await apiCall('updateDiscipleField', {
-        token: runtimeState.token,
-        rowId,
-        field,
-        value,
-      });
-    } catch (_error) {
-      await openPopupMessage('Falha de comunicação com a API.');
-      return;
+  try {
+    const entries = Object.entries(updates);
+    for (const [field, value] of entries) {
+      let result;
+      try {
+        result = await apiCall('updateDiscipleField', {
+          token: runtimeState.token,
+          rowId,
+          field,
+          value,
+        });
+      } catch (_error) {
+        await openPopupMessage('Falha de comunicação com a API.');
+        return;
+      }
+
+      if (!result.ok) {
+        await openPopupMessage(result.error || 'Não foi possível salvar as alterações.');
+        return;
+      }
     }
 
-    if (!result.ok) {
-      await openPopupMessage(result.error || 'Não foi possível salvar as alterações.');
-      return;
+    closeEditDiscipleModal();
+
+    ui.editDiscipleFeedback.style.color = '#1f7b5b';
+    ui.editDiscipleFeedback.textContent = 'Alterações salvas com sucesso.';
+    showToast('Editado com sucesso!', 'success');
+
+    await loadAdminDashboard();
+    openAdminDisciplesModal();
+  } finally {
+    if (ui.saveEditedDiscipleBtn) {
+      ui.saveEditedDiscipleBtn.disabled = false;
+      ui.saveEditedDiscipleBtn.textContent = originalSubmitText || 'Salvar alterações';
     }
   }
-
-  ui.editDiscipleFeedback.style.color = '#1f7b5b';
-  ui.editDiscipleFeedback.textContent = 'Alterações salvas com sucesso.';
-
-  await loadAdminDashboard();
-  openAdminDisciplesModal();
-
-  window.setTimeout(() => {
-    closeEditDiscipleModal();
-  }, 500);
 }
 
 async function removeDisciple(rowId) {
@@ -976,6 +1162,7 @@ async function removeDisciple(rowId) {
     return;
   }
 
+  showToast('Excluído com sucesso!', 'success');
   await loadAdminDashboard();
   openAdminDisciplesModal();
 }
@@ -986,6 +1173,13 @@ function bindEvents() {
 
   ui.discipleForm.addEventListener('submit', loginDisciple);
   ui.adminForm.addEventListener('submit', loginAdmin);
+  if (ui.installAppActionButtons && ui.installAppActionButtons.length) {
+    ui.installAppActionButtons.forEach((button) => {
+      if (button instanceof HTMLElement) {
+        button.addEventListener('click', handleInstallApp);
+      }
+    });
+  }
 
   ui.scheduleBtn.addEventListener('click', openAgendaLink);
 
@@ -1221,6 +1415,20 @@ async function init() {
   setActiveTab('disciple');
   closeAddDiscipleModal();
   closeConfirmModal(false);
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallButton_();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    updateInstallButton_();
+    showToast('App instalado com sucesso!', 'success');
+  });
+
+  updateInstallButton_();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});

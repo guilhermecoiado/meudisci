@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meudisci-v37';
+const CACHE_NAME = 'meudisci-v42';
 const URLS_TO_CACHE = [
   './index.html',
   './app.js',

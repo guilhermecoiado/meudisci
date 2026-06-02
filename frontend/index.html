@@ -46,11 +46,18 @@
         </form>
 
         <p id="loginFeedback" class="feedback" aria-live="polite"></p>
+
+        <button id="installAppBtn" class="install-app-btn hidden" type="button" aria-label="Instalar app">
+          <span class="install-app-icon" aria-hidden="true"></span>
+          <span>Instalar app</span>
+        </button>
       </section>
 
       <section id="discipleDashboard" class="panel hidden disciple-screen" aria-live="polite">
         <header class="disciple-topbar" aria-label="Topo do app">
-          <div class="topbar-spacer" aria-hidden="true"></div>
+          <button id="installAppTopLeftBtn" class="topbar-icon-btn topbar-install-btn" data-action="install-app" type="button" aria-label="Instalar app">
+            <span class="topbar-icon topbar-icon-install" aria-hidden="true"></span>
+          </button>
 
           <div class="topbar-brand" aria-label="MeuDisci">
             <span class="topbar-brand-icon" aria-hidden="true"></span>
@@ -154,7 +161,9 @@
 
       <section id="adminDashboard" class="panel hidden admin-screen" aria-live="polite">
         <header class="admin-topbar" aria-label="Topo do painel do discipulador">
-          <div class="topbar-spacer" aria-hidden="true"></div>
+          <button id="installAppAdminTopLeftBtn" class="topbar-icon-btn topbar-install-btn" data-action="install-app" type="button" aria-label="Instalar app">
+            <span class="topbar-icon topbar-icon-install" aria-hidden="true"></span>
+          </button>
 
           <div class="topbar-brand" aria-label="MeuDisci">
             <span class="topbar-brand-icon" aria-hidden="true"></span>

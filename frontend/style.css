@@ -194,6 +194,84 @@ body:not(.disciple-view):not(.admin-view) #loginSection .feedback {
   text-align: center;
   margin-top: 10px;
   min-height: 20px;
+  font-weight: 700;
+}
+
+body:not(.disciple-view):not(.admin-view) #loginSection .feedback.feedback-loading {
+  animation: login-feedback-pulse 900ms ease-in-out infinite;
+}
+
+body:not(.disciple-view):not(.admin-view) #loginSection .feedback.feedback-success {
+  animation: login-feedback-in 320ms ease;
+}
+
+body:not(.disciple-view):not(.admin-view) #loginSection .feedback.feedback-error {
+  animation: login-feedback-shake 300ms ease;
+}
+
+@keyframes login-feedback-pulse {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes login-feedback-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes login-feedback-shake {
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+body:not(.disciple-view):not(.admin-view) #loginSection .install-app-btn {
+  margin: 6px auto 0;
+}
+
+.install-app-btn {
+  border: 1px solid #c8d9ff;
+  background: #eaf2ff;
+  color: #24407b;
+  border-radius: 999px;
+  min-height: 42px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.install-app-icon {
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2324407b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v11'/%3E%3Cpath d='m7.5 10.5 4.5 4.5 4.5-4.5'/%3E%3Cpath d='M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2'/%3E%3C/svg%3E");
 }
 
 body.admin-view .app-shell {
@@ -272,6 +350,14 @@ body.disciple-view .app-shell {
 
 .topbar-icon-logout {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='M16 17l5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E");
+}
+
+.topbar-install-btn {
+  justify-self: start;
+}
+
+.topbar-icon-install {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v11'/%3E%3Cpath d='m7.5 10.5 4.5 4.5 4.5-4.5'/%3E%3Cpath d='M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2'/%3E%3C/svg%3E");
 }
 
 .topbar-brand {
@@ -737,6 +823,87 @@ body.disciple-view .app-shell {
 
 .hidden {
   display: none;
+}
+
+.toast-container {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.toast {
+  background: #1f7b5b;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  box-shadow: 0 10px 28px rgba(8, 18, 44, 0.25);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast-success {
+  background: #1f7b5b;
+}
+
+.toast-error {
+  background: #c03737;
+}
+
+.toast-info {
+  background: #1f4fbf;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.app-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 22, 48, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 45;
+}
+
+.app-loading-overlay.hidden {
+  display: none;
+}
+
+.app-loading-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  min-width: 210px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 14px 34px rgba(8, 18, 44, 0.22);
+  font-weight: 700;
+  color: #1f2e5d;
+}
+
+.app-loading-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #c9d8ff;
+  border-top-color: #2563eb;
+  animation: spin 700ms linear infinite;
+  flex: 0 0 18px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .tabs {
