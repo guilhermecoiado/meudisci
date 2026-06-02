@@ -175,17 +175,26 @@ function updateInstallButton_() {
     return;
   }
   const hasPrompt = Boolean(deferredInstallPrompt);
+  const isFirefox = /firefox/i.test(navigator.userAgent || '');
+  const unavailableTitle = isFirefox
+    ? 'No Firefox, use o menu do navegador para instalar'
+    : 'Instalação pode não estar disponível neste dispositivo';
   ui.installAppActionButtons.forEach((button) => {
     if (!(button instanceof HTMLElement)) {
       return;
     }
-    button.title = hasPrompt ? 'Instalar app' : 'Instalação pode não estar disponível neste dispositivo';
+    button.title = hasPrompt ? 'Instalar app' : unavailableTitle;
   });
 }
 
 async function handleInstallApp() {
   if (!deferredInstallPrompt) {
-    showToast('Instalação não disponível neste dispositivo.', 'info');
+    const isFirefox = /firefox/i.test(navigator.userAgent || '');
+    if (isFirefox) {
+      showToast('No Firefox, use o menu do navegador para instalar o app.', 'info');
+    } else {
+      showToast('Instalação não disponível neste dispositivo.', 'info');
+    }
     return;
   }
 
