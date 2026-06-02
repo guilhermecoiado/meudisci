@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563EB" />
+    <title>MeuDisci</title>
+    <link rel="icon" type="image/png" href="img/logo.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-1" aria-hidden="true"></div>
+    <div class="bg-shape bg-shape-2" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="app-header">
+        <h1><span class="brand-icon" aria-hidden="true"></span>MeuDisci</h1>
+        <p>Acompanhe seu discipulado em um só lugar.</p>
+      </header>
+
+      <section id="loginSection" class="panel">
+        <div class="tabs">
+          <button id="tabDisciple" class="tab active" type="button">Discípulo</button>
+          <button id="tabAdmin" class="tab" type="button">Discipulador</button>
+        </div>
+
+        <form id="discipleForm" class="form active">
+          <label for="sigla">Usuário</label>
+          <input id="sigla" name="sigla" type="text" required />
+
+          <label for="disciplePassword">Senha de acesso</label>
+          <input id="disciplePassword" name="password" type="password" required />
+
+          <button class="btn" type="submit">Entrar</button>
+        </form>
+
+        <form id="adminForm" class="form" aria-hidden="true">
+          <label for="adminUser">Usuário</label>
+          <input id="adminUser" name="user" type="text" required />
+
+          <label for="adminPassword">Senha</label>
+          <input id="adminPassword" name="password" type="password" required />
+
+          <button class="btn" type="submit">Entrar no painel</button>
+        </form>
+
+        <p id="loginFeedback" class="feedback" aria-live="polite"></p>
+      </section>
+
+      <section id="discipleDashboard" class="panel hidden disciple-screen" aria-live="polite">
+        <header class="disciple-topbar" aria-label="Topo do app">
+          <div class="topbar-spacer" aria-hidden="true"></div>
+
+          <div class="topbar-brand" aria-label="MeuDisci">
+            <span class="topbar-brand-icon" aria-hidden="true"></span>
+            <span class="topbar-brand-text">MeuDisci</span>
+          </div>
+
+          <button id="topLogoutBtn" class="topbar-icon-btn" type="button" aria-label="Sair">
+            <span class="topbar-icon topbar-icon-logout" aria-hidden="true"></span>
+          </button>
+        </header>
+
+        <div class="disciple-content-wrap">
+          <article class="welcome-card">
+            <div class="welcome-copy">
+              <h2 id="greeting">Olá 👋</h2>
+              <p>Que bom te ver por aqui!</p>
+            </div>
+            <div class="welcome-art" aria-hidden="true"></div>
+          </article>
+
+          <article class="main-discipleship-card">
+            <span class="main-card-icon" aria-hidden="true"></span>
+            <div>
+              <h3>Seu discipulado</h3>
+              <p>Acompanhe sua jornada</p>
+            </div>
+          </article>
+
+          <div class="disciple-info-stack">
+            <article class="info-row info-row-mentor">
+              <span class="info-icon info-icon-mentor" aria-hidden="true"></span>
+              <div class="info-copy">
+                <h3>Discipulador(es)</h3>
+                <p id="discipleMentor">-</p>
+              </div>
+            </article>
+
+            <article class="info-row info-row-last">
+              <span class="info-icon info-icon-last" aria-hidden="true"></span>
+              <div class="info-copy">
+                <h3>Último Discipulado</h3>
+                <p id="discipleLast">-</p>
+              </div>
+            </article>
+
+            <article class="info-row info-row-next">
+              <span class="info-icon info-icon-next" aria-hidden="true"></span>
+              <div class="info-copy">
+                <h3>Próximo Discipulado</h3>
+                <p id="discipleNext" class="info-next-value">-</p>
+              </div>
+            </article>
+          </div>
+
+          <article id="noScheduleAlert" class="alert-card hidden" role="alert">
+            <div class="alert-head">
+              <span class="alert-icon" aria-hidden="true"></span>
+              <strong>Você não possui discipulado agendado.</strong>
+            </div>
+            <p>Agende agora para não acabar deixando passar!</p>
+          </article>
+
+          <article class="meta-card">
+            <h3>Meta da Semana</h3>
+            <div class="meta-inner-box">
+              <p id="discipleGoal">Nenhuma meta definida.</p>
+              <p class="meta-secondary">Seu discipulador ainda não definiu sua meta.</p>
+            </div>
+          </article>
+
+          <button id="scheduleBtn" class="btn schedule-main-btn" type="button">
+            <span class="schedule-btn-icon" aria-hidden="true"></span>
+            AGENDAR DISCIPULADO
+          </button>
+
+          <article class="motivation-card">
+            <span class="motivation-icon" aria-hidden="true"></span>
+            <div>
+              <h3>Lembre-se</h3>
+              <p>O discipulado transforma vidas! Siga firme nessa jornada.</p>
+            </div>
+            <img class="motivation-art" src="img/mountain.png" alt="" aria-hidden="true" />
+          </article>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Navegação principal">
+          <button id="navHomeBtn" class="nav-item active" type="button">
+            <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+            <span>Início</span>
+          </button>
+          <button id="navDisciplesBtn" class="nav-item" type="button">
+            <span class="nav-icon nav-icon-group" aria-hidden="true"></span>
+            <span>Discipulados</span>
+          </button>
+          <button id="navAgendaBtn" class="nav-item" type="button">
+            <span class="nav-icon nav-icon-calendar" aria-hidden="true"></span>
+            <span>Agenda</span>
+          </button>
+        </nav>
+      </section>
+
+      <section id="adminDashboard" class="panel hidden admin-screen" aria-live="polite">
+        <header class="admin-topbar" aria-label="Topo do painel do discipulador">
+          <div class="topbar-spacer" aria-hidden="true"></div>
+
+          <div class="topbar-brand" aria-label="MeuDisci">
+            <span class="topbar-brand-icon" aria-hidden="true"></span>
+            <span class="topbar-brand-text">MeuDisci</span>
+          </div>
+
+          <button id="logoutAdmin" class="topbar-icon-btn" type="button" aria-label="Sair">
+            <span class="topbar-icon topbar-icon-logout" aria-hidden="true"></span>
+          </button>
+        </header>
+
+        <div class="admin-content-wrap">
+          <article class="welcome-card admin-welcome-card">
+            <div class="welcome-copy">
+              <h2 id="adminGreeting" class="admin-greeting">Olá!</h2>
+              <p>Acompanhe seus discipulados em um só lugar.</p>
+            </div>
+            <div class="welcome-art admin-welcome-art" aria-hidden="true"></div>
+          </article>
+
+          <article class="main-discipleship-card admin-main-discipleship-card">
+            <div class="admin-main-card-icon" aria-hidden="true"></div>
+            <div>
+              <h3 class="panel-title-admin">Painel do Discipulador</h3>
+              <p class="admin-main-card-subtitle">Visão geral dos seus discípulos</p>
+            </div>
+          </article>
+
+          <div class="card-grid admin-stats">
+            <article class="stat-card stat-card-total">
+              <span class="stat-icon stat-icon-total" aria-hidden="true"></span>
+              <h3>Discípulos</h3>
+              <p id="statTotal" class="stat-number">0</p>
+            </article>
+            <article class="stat-card stat-card-scheduled">
+              <span class="stat-icon stat-icon-scheduled" aria-hidden="true"></span>
+              <h3>Agendados</h3>
+              <p id="statScheduled" class="stat-number">0</p>
+              <button id="viewScheduledBtn" class="stat-eye-btn" type="button" aria-label="Ver próximos discipulados">
+                <span class="icon-eye" aria-hidden="true"></span>
+              </button>
+            </article>
+            <article class="stat-card stat-card-empty">
+              <span class="stat-icon stat-icon-empty" aria-hidden="true"></span>
+              <h3>Discípulos Sem Agendsa</h3>
+              <p id="statWithout" class="stat-number">0</p>
+            </article>
+          </div>
+
+          <div class="admin-list-head">
+            <h3>Discípulos sem agenda</h3>
+            <button id="openNoScheduleModal" class="btn btn-ghost admin-scope-btn" type="button">Ver todos</button>
+          </div>
+
+          <div id="adminList" class="admin-list"></div>
+
+          <div class="admin-actions">
+            <button id="addDiscipleBtn" class="btn btn-wide" type="button">Adicionar Novo Discípulo</button>
+          </div>
+        </div>
+
+        <nav class="bottom-nav admin-bottom-nav" aria-label="Navegação do discipulador">
+          <button id="adminNavHomeBtn" class="nav-item active" type="button">
+            <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+            <span>Início</span>
+          </button>
+          <button id="adminNavDisciplesBtn" class="nav-item" type="button">
+            <span class="nav-icon nav-icon-group" aria-hidden="true"></span>
+            <span>Discípulos</span>
+          </button>
+          <button id="adminNavAgendaBtn" class="nav-item" type="button">
+            <span class="nav-icon nav-icon-calendar" aria-hidden="true"></span>
+            <span>Agenda</span>
+          </button>
+          <button id="adminNavAddBtn" class="nav-item" type="button">
+            <span class="nav-icon nav-icon-add" aria-hidden="true"></span>
+            <span>Adicionar</span>
+          </button>
+        </nav>
+      </section>
+
+      <section id="adminDisciplesModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="adminDisciplesModalTitle">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3 id="adminDisciplesModalTitle"><span class="modal-title-icon" aria-hidden="true"></span>Todos os Discípulos</h3>
+            <button id="closeAdminDisciplesModal" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+          </div>
+          <div id="adminDisciplesModalList" class="scheduled-list"></div>
+        </div>
+      </section>
+
+      <section id="editDiscipleModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="editDiscipleTitle">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3 id="editDiscipleTitle"><span class="modal-title-icon" aria-hidden="true"></span>Editar Discípulo</h3>
+            <button id="closeEditDiscipleModal" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+          </div>
+          <form id="editDiscipleForm" class="form active">
+            <input id="editDiscipleRowId" type="hidden" />
+
+            <label for="editDiscipleName">Nome</label>
+            <input id="editDiscipleName" name="nome" type="text" required />
+
+            <label for="editDiscipleEmail">Email</label>
+            <input id="editDiscipleEmail" name="email" type="email" required />
+
+            <label for="editDiscipleSigla">Sigla de Acesso</label>
+            <input id="editDiscipleSigla" name="siglaAcesso" type="text" required />
+
+            <label for="editDiscipleSenha">Senha de Acesso</label>
+            <input id="editDiscipleSenha" name="senhaAcesso" type="text" required />
+
+            <label for="editDiscipleMentor">Discipulador (es)</label>
+            <input id="editDiscipleMentor" name="discipulador" type="text" required />
+
+            <label for="editDiscipleLeader">Líder?</label>
+            <select id="editDiscipleLeader" name="lider" required>
+              <option value="Não">Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+
+            <button id="saveEditedDiscipleBtn" class="btn" type="submit">Salvar alterações</button>
+          </form>
+          <p id="editDiscipleFeedback" class="feedback" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="addDiscipleModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="addDiscipleTitle">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3 id="addDiscipleTitle"><span class="modal-title-icon" aria-hidden="true"></span>Novo Discípulo</h3>
+            <button id="closeAddDiscipleModal" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+          </div>
+
+          <form id="addDiscipleForm" class="form active">
+            <label for="newDiscipleName">Discipulos:</label>
+            <input id="newDiscipleName" name="nome" type="text" required />
+
+            <label for="newDiscipleEmail">Email:</label>
+            <input id="newDiscipleEmail" name="email" type="email" required />
+
+            <label for="newDiscipleSigla">Sigla Acesso:</label>
+            <input id="newDiscipleSigla" name="siglaAcesso" type="text" required />
+
+            <label for="newDiscipleSenha">Senha Acesso:</label>
+            <input id="newDiscipleSenha" name="senhaAcesso" type="text" required />
+
+            <label for="newDiscipleMentor">Discipulador (es):</label>
+            <input id="newDiscipleMentor" name="discipulador" type="text" required />
+
+            <label for="newDiscipleLeader">Líder?</label>
+            <select id="newDiscipleLeader" name="lider" required>
+              <option value="Não" selected>Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+
+            <button id="saveNewDiscipleBtn" class="btn" type="submit">Salvar Novo Discípulo</button>
+          </form>
+
+          <p id="addDiscipleFeedback" class="feedback" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="noScheduleModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="noScheduleModalTitle">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3 id="noScheduleModalTitle">Sem agenda</h3>
+            <button id="closeNoScheduleModal" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+          </div>
+          <div id="noScheduleList" class="scheduled-list"></div>
+        </div>
+      </section>
+
+      <section id="scheduledModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="scheduledModalTitle">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3 id="scheduledModalTitle"><span class="modal-title-icon icon-eye" aria-hidden="true"></span>Próximos Discipulados</h3>
+            <button id="closeScheduledModal" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+          </div>
+
+          <p id="scheduledSummary" class="scheduled-summary"></p>
+          <div id="scheduledList" class="scheduled-list"></div>
+        </div>
+      </section>
+
+      <section id="discipleScheduledModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="discipleScheduledModalTitle">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3 id="discipleScheduledModalTitle"><span class="modal-title-icon icon-eye" aria-hidden="true"></span>Meus Agendamentos</h3>
+            <button id="closeDiscipleScheduledModal" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+          </div>
+
+          <p id="discipleScheduledSummary" class="scheduled-summary"></p>
+          <div id="discipleScheduledList" class="scheduled-list"></div>
+        </div>
+      </section>
+
+      <section id="confirmModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="confirmModalTitle">
+        <div class="modal-card modal-card-confirm">
+          <div class="modal-head">
+            <h3 id="confirmModalTitle">Confirmar Exclusão</h3>
+          </div>
+          <p id="confirmModalMessage" class="confirm-modal-message">Deseja realmente excluir este agendamento?</p>
+          <div class="confirm-modal-actions">
+            <button id="confirmModalCancel" class="btn btn-ghost" type="button">Cancelar</button>
+            <button id="confirmModalConfirm" class="btn btn-danger" type="button">Excluir</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.MEUDISCI_API_URL = 'https://script.google.com/macros/s/AKfycbxRdShTCxzXeTZ37VUyXU5ozQ8fLNqXFW4BKPrDX4oWLv1JRFdn_3ZuMaH96TtXpwW4/exec';
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>
